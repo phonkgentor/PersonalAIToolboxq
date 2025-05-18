@@ -1,9 +1,0 @@
-Flask
-moviepy
-opencv-python
-yt-dlp
-librosa
-scipy
-numpy
-soundfile
-jinja2
