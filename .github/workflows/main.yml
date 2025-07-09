@@ -22,9 +22,9 @@ jobs:
       - name: 🔐 Configure Ngrok Authtoken
         run: |
           ./ngrok/ngrok.exe authtoken $Env:NGROK_AUTH
-          Write-Output "Ngrok token applied: $Env:NGROK_AUTH"
+          Write-Output "Ngrok token begins with: $($Env:NGROK_AUTH.Substring(0,6))****"
         env:
-          NGROK_AUTH: ${{ secrets.TAKEN }}
+          NGROK_AUTH: ${{ secrets.NGROK_AUTH_TOKEN }}
 
       - name: 🖥️ Enable Remote Desktop
         run: |
@@ -33,10 +33,10 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
           Copy-Item wallpaper.bat D:\a\wallpaper.bat
 
-      - name: 🌐 Start Ngrok Tunnel
+      - name: 🌐 Start Ngrok Tunnel (TCP 3389)
         run: Start-Process PowerShell -ArgumentList '-NoExit', '-Command', './ngrok/ngrok.exe tcp --region ap 3389'
 
       - name: 🚀 Launch RDP Scripts
         run: |
           cmd /c start.bat
-          cmd /c loop.ps1
+          powershell -ExecutionPolicy Bypass -File loop.ps1
