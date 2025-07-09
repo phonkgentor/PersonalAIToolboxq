@@ -1,38 +1,42 @@
 name: WINDOWS 2022 RDP
+
 on:
-  workflow_dispatch
-  
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: windows-2022
     timeout-minutes: 9999
+
     steps:
-      - name: Download Ngrok.
+      - name: 🔽 Download Resources
         run: |
           Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
           Invoke-WebRequest https://raw.githubusercontent.com/Riders004/rdp/master/start.bat -OutFile start.bat
           Invoke-WebRequest https://raw.githubusercontent.com/Riders004/rdp/master/download1.jpeg -OutFile wallpaper.bat
           Invoke-WebRequest https://raw.githubusercontent.com/Vip3rLi0n/Ngrok-RDPs/main/resources/loop.ps1 -OutFile loop.ps1
-          
-      - name: Extract ngrok
+
+      - name: 📦 Extract Ngrok
         run: Expand-Archive ngrok.zip
-        
-      - name: Connect Ngrok.
+
+      - name: 🔐 Configure Ngrok Authtoken
         run: |
           ./ngrok/ngrok.exe authtoken $Env:NGROK_AUTH
-          echo ${{ secrets.TAKEN }}
-          echo $Env:NGROK_AUTH
+          Write-Output "Ngrok token applied: $Env:NGROK_AUTH"
         env:
           NGROK_AUTH: ${{ secrets.TAKEN }}
-      - name: Windows10 RDP.
+
+      - name: 🖥️ Enable Remote Desktop
         run: |
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-          copy wallpaper.bat D:\a\wallpaper.bat
-      - name: Tunnel.
-        run: Start-Process Powershell -ArgumentList '-Noexit -Command "/ngrok/ngrok.exe tcp --region ap 3389"'
-      - name: Connect Rdp.
-        run: cmd /c start.bat
-      - name: win10 RDP.
-        run: cmd /c loop.bat
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
+          Copy-Item wallpaper.bat D:\a\wallpaper.bat
+
+      - name: 🌐 Start Ngrok Tunnel
+        run: Start-Process PowerShell -ArgumentList '-NoExit', '-Command', './ngrok/ngrok.exe tcp --region ap 3389'
+
+      - name: 🚀 Launch RDP Scripts
+        run: |
+          cmd /c start.bat
+          cmd /c loop.ps1
